@@ -17,7 +17,7 @@ async fn main() {
             println!("DelConfig command not implemented yet");
         }
         CliParsedWay::TranslateWithParam(p, from, target) => {
-            print!("{}", sdk.translate_text(&p, &from, &target));
+            print!("{}", sdk.translate_text(&p, &from, &target).await.expect("failed to translate text"));
         }
         CliParsedWay::TranslateWithConfig(_, _) => {
             println!("TranslateWithConfig command not implemented yet");
