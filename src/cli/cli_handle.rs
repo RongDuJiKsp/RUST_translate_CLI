@@ -14,7 +14,8 @@ pub enum CliParsedWay {
     author,
     about = "一个简单的翻译命令行工具，支持配置保存、删除和语言选择",
     long_about = "
-    这是一个用于翻译文本的命令行工具。你可以指定源语言和目标语言，还可以保存和删除配置。
+    这是一个用于翻译文本的命令行工具。可以指定源语言和目标语言，还可以保存和删除配置。
+    该CLI通过调用腾讯云SDK提供服务，需要在环境变量中指定腾讯云SDK {TCC_SECRET_ID} 和 {TCC_SECRET_KEY}
     示例:
     rust-trans-cli.exe -p <plain> -f <from_lang> -t <to_lang>  # 翻译 plain
     rust-trans-cli.exe -c <config_name> -s -f <from_lang> -t <to_lang>  # 将翻译策略保存至配置
