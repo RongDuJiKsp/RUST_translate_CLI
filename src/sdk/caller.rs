@@ -8,6 +8,7 @@ use serde_json::json;
 use sha2::Digest;
 use std::env;
 use std::time::{SystemTime, UNIX_EPOCH};
+use serde::{Deserialize, Serialize};
 
 const REGION_DISTANCE_FIRST_HOST: &str = "tmt.tencentcloudapi.com";
 const SERVICE_NAME: &str = "tmt";
@@ -51,8 +52,8 @@ impl TencentCloudTranslateSDK {
              "ProjectId": 0
         }).to_string();
         let res_json_str = self.call_service_with_json(action, &req_payload).await?;
-        println!("{}", res_json_str);
-        Ok(String::from('s'))
+        let deserialized:TranslateResponse= serde_json::from_str(&res_json_str)?;
+        Ok(deserialized.response.target_text)
     }
 }
 fn canonical_request_str(action: &str, payload: &str) -> String {
@@ -112,4 +113,14 @@ async fn send_request(action: &str, payload: &str, timestamp: u64, authorization
         .await?;
     let body = res.text().await?;
     Ok(body)
+}
+#[derive(Deserialize, Debug)]
+struct TranslateResponse {
+    #[serde(rename = "Response")]
+    response: TranslateResponseInfo,
+}
+#[derive(Deserialize, Debug)]
+struct TranslateResponseInfo {
+    #[serde(rename = "TargetText")]
+    target_text: String,
 }

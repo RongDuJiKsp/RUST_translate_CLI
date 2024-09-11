@@ -7,7 +7,8 @@ mod sdk;
 #[tokio::main]
 async fn main() {
     let sdk = sdk::caller::TencentCloudTranslateSDK::from_env().expect("SDK Key未配置！请配置后使用");
-    sdk.translate_text("Hello", &"en".to_string(), &"zh".to_string()).await.unwrap();
+    let s = sdk.translate_text("Hello", &"en".to_string(), &"zh".to_string()).await.unwrap();
+    println!("{}", s);
     // match cli::cli_handle::CliHandler::parse().user_to_do() {
     //     CliParsedWay::AddConfig(_) => {
     //         println!("AddConfig command not implemented yet");
