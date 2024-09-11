@@ -1,10 +1,6 @@
-use hmac::{Hmac, Mac};
-use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
-use serde_json::json;
-use sha2::{Digest, Sha256};
-use std::time::{SystemTime, UNIX_EPOCH};
-use std::fmt::Write;
 use hex;
+use hmac::{Hmac, Mac};
+use sha2::{Digest, Sha256};
 
 pub struct Crypto;
 impl Crypto {

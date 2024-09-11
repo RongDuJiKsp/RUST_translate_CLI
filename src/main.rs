@@ -1,6 +1,4 @@
 use clap::Parser;
-use crate::cli::cli_handle;
-use crate::cli::cli_handle::CliParsedWay;
 
 mod cli;
 mod config_save_and_load;

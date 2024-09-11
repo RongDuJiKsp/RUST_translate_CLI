@@ -1,7 +1,7 @@
+use anyhow::{anyhow, Result};
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
-use anyhow::{anyhow, Result};
 pub const SPLIT_NAME: &'static str = "=";
 pub const SPLIT_FLAG: &'static str = "|";
 pub struct TransConfig {

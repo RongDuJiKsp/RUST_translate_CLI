@@ -1,5 +1,5 @@
+use crate::alias::param_alias::{ConfigName, FromLang, TargetLang, ToTranslatePlain};
 use clap::Parser;
-use crate::alias::param_alias::{TargetLang, FromLang, ConfigName, ToTranslatePlain};
 pub enum CliParsedWay {
     AddConfig((ConfigName, FromLang, TargetLang)),
     DelConfig(ConfigName),

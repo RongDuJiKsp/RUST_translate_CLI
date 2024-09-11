@@ -1,14 +1,13 @@
-use std::env;
-use hmac::{Hmac, Mac};
-use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
-use serde_json::json;
-use sha2::{Digest, Sha256};
-use std::time::{SystemTime, UNIX_EPOCH};
-use std::fmt::Write;
-use anyhow::Result;
-use hex;
 use crate::alias::param_alias::{FromLang, TargetLang};
 use crate::sdk::crypto::Crypto;
+use anyhow::Result;
+use hex;
+use hmac::Mac;
+use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
+use serde_json::json;
+use sha2::Digest;
+use std::env;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 const REGION_DISTANCE_FIRST_HOST: &str = "tmt.tencentcloudapi.com";
 const SERVICE_NAME: &str = "tmt";
