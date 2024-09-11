@@ -27,92 +27,21 @@ impl TencentCloudTranslateSDK {
         let secure_key = env::var("TCC_SECRET_KEY")?;
         Ok(Self { secure_id, secure_key })
     }
-    pub async fn call_service_with_payload(&self, action: &str, payload: &str) -> Result<String> {
-        let service = "tmt";
-        let version = "2018-03-21";
-        let region = "ap-guangzhou";
-        let secret_id = &self.secure_id;
-        let secret_key = &self.secure_key;
-        let token = "";
-        let host = "tmt.tencentcloudapi.com";
-        let algorithm = "TC3-HMAC-SHA256";
-        // 获取当前时间戳
+    pub async fn call_service_with_json(&self, action: &str, json: &str) -> Result<String> {
+        //time data
         let start = SystemTime::now();
         let timestamp = start.duration_since(UNIX_EPOCH)?.as_secs();
-
-        // ************* 步骤 1：拼接规范请求串 *************
-        let http_request_method = "POST";
-        let canonical_uri = "/";
-        let canonical_query_string = "";
-        let content_type = "application/json; charset=utf-8";
-        let canonical_headers = format!(
-            "content-type:{}\nhost:{}\nx-tc-action:{}\n",
-            content_type, host, action.to_lowercase()
-        );
-        let signed_headers = "content-type;host;x-tc-action";
-        let hashed_request_payload = Crypto::sha256hex(payload);
-        let canonical_request = format!(
-            "{}\n{}\n{}\n{}\n{}\n{}",
-            http_request_method,
-            canonical_uri,
-            canonical_query_string,
-            canonical_headers,
-            signed_headers,
-            hashed_request_payload
-        );
-        println!("Canonical Request: {}", canonical_request);
-
-        // ************* 步骤 2：拼接待签名字符串 *************
         let date = chrono::Utc::now().format("%Y-%m-%d").to_string();
-        let credential_scope = format!("{}/{}/tc3_request", date, service);
-        let hashed_canonical_request = Crypto::sha256hex(&canonical_request);
-        let string_to_sign = format!(
-            "{}\n{}\n{}\n{}",
-            algorithm, timestamp, credential_scope, hashed_canonical_request
-        );
-        println!("String to Sign: {}", string_to_sign);
-
-        // ************* 步骤 3：计算签名 *************
-        let secret_date = Crypto::hmacsha256(date.as_ref(), format!("TC3{}", secret_key).as_ref());
-        let secret_service = Crypto::hmacsha256(service.as_ref(), &secret_date);
-        let secret_signing = Crypto::hmacsha256("tc3_request".as_ref(), &secret_service);
-        let signature_bin = Crypto::hmacsha256(string_to_sign.as_ref(), &secret_signing);
-        let signature = hex::encode(&signature_bin);
-        println!("Signature: {:?}", signature);
-
-        // ************* 步骤 4：拼接 Authorization *************
+        let credential_scope = format!("{}/{}/tc3_request", date, SERVICE_NAME);
+        //call func
+        let canonical_request = canonical_request_str(action, json);
+        let str_to_sign = string_to_sign(&canonical_request, timestamp, &date);
+        let signature_d = signature(&date, &self.secure_key, &str_to_sign);
         let authorization = format!(
             "{} Credential={}/{}, SignedHeaders={}, Signature={}",
-            algorithm, secret_id, credential_scope, signed_headers, signature
+            SEC_ALGORITHM, self.secure_id, credential_scope, SIGNED_HEADERS, signature_d
         );
-        println!("Authorization: {}", authorization);
-
-        // ************* 步骤 5：构造并发起请求 *************
-        let url = format!("https://{}", host);
-        let mut headers = HeaderMap::new();
-        headers.insert("Host", HeaderValue::from_str(host)?);
-        headers.insert("X-TC-Action", HeaderValue::from_str(action)?);
-        headers.insert("X-TC-Version", HeaderValue::from_str(version)?);
-        headers.insert("X-TC-Timestamp", HeaderValue::from_str(&timestamp.to_string())?);
-        headers.insert(CONTENT_TYPE, HeaderValue::from_str(content_type)?);
-        headers.insert("Authorization", HeaderValue::from_str(&authorization)?);
-        if !region.is_empty() {
-            headers.insert("X-TC-Region", HeaderValue::from_str(region)?);
-        }
-        if !token.is_empty() {
-            headers.insert("X-TC-Token", HeaderValue::from_str(token)?);
-        }
-
-        let client = reqwest::Client::new();
-        let res = client
-            .post(&url)
-            .headers(headers)
-            .body(payload.to_string())
-            .send()
-            .await?;
-        let body = res.text().await?;
-        println!("Response: {}", body);
-        Ok(body)
+        Ok(send_request(action, json, timestamp, &authorization).await?)
     }
     pub async fn translate_text(&self, text: &str, from_lang: &FromLang, target_lang: &TargetLang) -> Result<String> {
         let action = "TextTranslate";
@@ -122,8 +51,66 @@ impl TencentCloudTranslateSDK {
              "Target": target_lang,
              "ProjectId": 0
         }).to_string();
-        let res_json_str = self.call_service_with_payload(action, &req_payload).await?;
+        let res_json_str = self.call_service_with_json(action, &req_payload).await?;
         println!("{}", res_json_str);
         Ok(String::from('s'))
     }
+}
+fn canonical_request_str(action: &str, payload: &str) -> String {
+    let http_request_method = "POST";
+    let canonical_uri = "/";
+    let canonical_query_string = "";
+    let canonical_headers = format!(
+        "content-type:{}\nhost:{}\nx-tc-action:{}\n",
+        API_CONTENT_TYPE, REGION_DISTANCE_FIRST_HOST, action.to_lowercase()
+    );
+    let hashed_request_payload = Crypto::sha256hex(payload);
+    let canonical_request = format!(
+        "{}\n{}\n{}\n{}\n{}\n{}",
+        http_request_method,
+        canonical_uri,
+        canonical_query_string,
+        canonical_headers,
+        SIGNED_HEADERS,
+        hashed_request_payload
+    );
+    canonical_request
+}
+fn string_to_sign(canonical_request: &str, timestamp: u64, date: &str) -> String {
+    let credential_scope = format!("{}/{}/tc3_request", date, SERVICE_NAME);
+    let hashed_canonical_request = Crypto::sha256hex(&canonical_request);
+    let string_to_sign = format!(
+        "{}\n{}\n{}\n{}",
+        SEC_ALGORITHM, timestamp, credential_scope, hashed_canonical_request
+    );
+    string_to_sign
+}
+
+fn signature(date: &str, secret_key: &str, str_to_sign: &str) -> String {
+    let secret_date = Crypto::hmacsha256(date.as_bytes(), format!("TC3{}", secret_key).as_bytes());
+    let secret_service = Crypto::hmacsha256(SERVICE_NAME.as_bytes(), &secret_date);
+    let secret_signing = Crypto::hmacsha256("tc3_request".as_bytes(), &secret_service);
+    let signature = Crypto::hmacsha256(str_to_sign.as_bytes(), &secret_signing);
+    hex::encode(signature)
+}
+async fn send_request(action: &str, payload: &str, timestamp: u64, authorization: &str) -> Result<String> {
+    let url = format!("https://{}", REGION_DISTANCE_FIRST_HOST);
+    let mut headers = HeaderMap::new();
+    headers.insert("Host", HeaderValue::from_str(REGION_DISTANCE_FIRST_HOST)?);
+    headers.insert("X-TC-Action", HeaderValue::from_str(action)?);
+    headers.insert("X-TC-Version", HeaderValue::from_str(SERVICE_VERSION)?);
+    headers.insert("X-TC-Timestamp", HeaderValue::from_str(&timestamp.to_string())?);
+    headers.insert(CONTENT_TYPE, HeaderValue::from_str(API_CONTENT_TYPE)?);
+    headers.insert("Authorization", HeaderValue::from_str(authorization)?);
+    headers.insert("X-TC-Region", HeaderValue::from_str(SERVICE_REGION)?);
+
+    let client = reqwest::Client::new();
+    let res = client
+        .post(&url)
+        .headers(headers)
+        .body(payload.to_string())
+        .send()
+        .await?;
+    let body = res.text().await?;
+    Ok(body)
 }
