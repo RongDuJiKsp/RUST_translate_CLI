@@ -1,9 +1,9 @@
-use std::path::Path;
+use crate::alias::param_alias::{ConfigName, FromLang, TargetLang};
 use crate::util;
 use anyhow::{anyhow, Result};
+use std::path::Path;
 use tokio::fs::File;
 use tokio::io::{AsyncBufReadExt, AsyncReadExt};
-use crate::alias::param_alias::{ConfigName, FromLang, TargetLang};
 
 const SPLIT_NAME: &str = "=";
 const SPLIT_FLAG: &str = "|";
