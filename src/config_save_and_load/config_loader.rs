@@ -76,6 +76,7 @@ impl AsyncClose for ConfigLoader {
             .write(true)
             .open(&self.config_path)
             .await?;
+        file.set_len(0).await?;
         let mut buf_writer = io::BufWriter::new(file);
         for line in last_file_buf.split(|x| *x == b'\n') {
             if let Ok(Some(cfg)) = TransConfig::from_one_line(std::str::from_utf8(line)?) {
