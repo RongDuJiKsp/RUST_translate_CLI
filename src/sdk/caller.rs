@@ -2,11 +2,9 @@ use crate::alias::param_alias::{FromLang, TargetLang};
 use crate::sdk::crypto::Crypto;
 use anyhow::Result;
 use hex;
-use hmac::Mac;
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
 use serde::Deserialize;
 use serde_json::json;
-use sha2::Digest;
 use std::env;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -52,7 +50,7 @@ impl TencentCloudTranslateSDK {
              "ProjectId": 0
         }).to_string();
         let res_json_str = self.call_service_with_json(action, &req_payload).await?;
-        let deserialized:TranslateResponse= serde_json::from_str(&res_json_str)?;
+        let deserialized: TranslateResponse = serde_json::from_str(&res_json_str)?;
         Ok(deserialized.response.target_text)
     }
 }
