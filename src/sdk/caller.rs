@@ -50,8 +50,10 @@ impl TencentCloudTranslateSDK {
              "ProjectId": 0
         }).to_string();
         let res_json_str = self.call_service_with_json(action, &req_payload).await?;
-        let deserialized: TranslateResponse = serde_json::from_str(&res_json_str)?;
-        Ok(deserialized.response.target_text)
+        match  serde_json::from_str::<TranslateResponse>(&res_json_str) {
+            Ok(deserialized)=>Ok(deserialized.response.target_text),
+            Err(_)=>Err(anyhow::anyhow!("Failed to translate text,response is {}", res_json_str)),
+        }
     }
 }
 fn canonical_request_str(action: &str, payload: &str) -> String {

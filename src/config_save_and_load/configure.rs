@@ -3,7 +3,7 @@ use crate::util;
 use anyhow::{anyhow, Result};
 use std::path::Path;
 use tokio::fs::File;
-use tokio::io::{AsyncBufReadExt, AsyncReadExt};
+use tokio::io::{ AsyncReadExt};
 
 const SPLIT_NAME: &str = "=";
 const SPLIT_FLAG: &str = "|";
