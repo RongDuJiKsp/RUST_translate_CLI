@@ -11,7 +11,7 @@ mod util;
 #[tokio::main]
 async fn main() {
     let sdk = sdk::caller::TencentCloudTranslateSDK::from_env().expect("SDK Key未配置！请配置后使用");
-    let mut cfg = ConfigLoader::from_path("./config/rust_trans_cli").expect("加载配置失败");
+    let mut cfg = ConfigLoader::from_path("./.config/rust_trans_cli").expect("加载配置失败");
     match cli::cli_handle::CliHandler::parse().user_to_do() {
         CliParsedWay::AddConfig(name, from, to) => {
             cfg.save_config(&name, &from, &to).expect("保存配置失败！");

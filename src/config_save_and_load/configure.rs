@@ -6,8 +6,8 @@ use std::path::Path;
 use std::io;
 use crate::alias::param_alias::{ConfigName, FromLang, TargetLang};
 
-pub const SPLIT_NAME: &str = "=";
-pub const SPLIT_FLAG: &str = "|";
+const SPLIT_NAME: &str = "=";
+const SPLIT_FLAG: &str = "|";
 pub struct TransConfig {
     pub name: String,
     pub from_lang: String,
