@@ -1,5 +1,5 @@
 use crate::alias::param_alias::{ConfigName, FromLang, TargetLang};
-use crate::config_save_and_load::configure::{TransConfig, SPLIT_FLAG, SPLIT_NAME};
+use crate::config_save_and_load::configure::{TransConfig};
 use anyhow::anyhow;
 use std::cmp::PartialEq;
 use std::collections::HashMap;
@@ -68,8 +68,7 @@ impl Drop for ConfigLoader {
                 .open(self.config_path.as_str())
                 .expect("写回配置文件时打开文件读取发生错误！");
             for line in io::BufReader::new(file).lines() {
-                let line = line.expect("写回配置时读取配置文件发生错误");
-                let cfg = TransConfig::from_one_line(&line);
+                let cfg = TransConfig::from_one_line(&line.expect("写回配置时读取配置文件发生错误"));
                 if let Err(_) = cfg {
                     continue;
                 }
@@ -77,12 +76,12 @@ impl Drop for ConfigLoader {
                 if to_delete.contains(&cfg.name) {
                     continue;
                 }
-                buf_writer.extend_from_slice(line.as_bytes());
+                buf_writer.extend_from_slice(&cfg.to_line());
             }
         }
         for log in &self.change_log {
             if let ConfigChangeLog::New(config_name, from, target) = log {
-                buf_writer.extend_from_slice(format!("{}{}{}{}{}\n", config_name, SPLIT_NAME, from, SPLIT_FLAG, target).as_bytes())
+                buf_writer.extend_from_slice(&TransConfig::from_val_to_line(config_name, from, target))
             }
         }
         File::options()

@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io::BufRead;
 use std::path::Path;
 use std::io;
+use crate::alias::param_alias::{ConfigName, FromLang, TargetLang};
 
 pub const SPLIT_NAME: &str = "=";
 pub const SPLIT_FLAG: &str = "|";
@@ -45,5 +46,11 @@ impl TransConfig {
         }
         let (name, from_lang, target_lang) = (units[0].to_string(), flags[0].to_string(), flags[1].to_string());
         Ok(TransConfig { name, from_lang, target_lang })
+    }
+    pub fn to_line(&self) -> Vec<u8> {
+        Vec::from(format!("{}{}{}{}{}\n", &self.name, SPLIT_NAME, &self.from_lang, SPLIT_FLAG, &self.target_lang))
+    }
+    pub fn from_val_to_line(name: &ConfigName, from_lang: &FromLang, target_lang: &TargetLang) -> Vec<u8> {
+        Vec::from(format!("{}{}{}{}{}\n", name, SPLIT_NAME, from_lang, SPLIT_FLAG, target_lang))
     }
 }
