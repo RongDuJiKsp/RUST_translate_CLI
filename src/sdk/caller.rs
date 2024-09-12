@@ -4,11 +4,11 @@ use anyhow::Result;
 use hex;
 use hmac::Mac;
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
+use serde::Deserialize;
 use serde_json::json;
 use sha2::Digest;
 use std::env;
 use std::time::{SystemTime, UNIX_EPOCH};
-use serde::{Deserialize, Serialize};
 
 const REGION_DISTANCE_FIRST_HOST: &str = "tmt.tencentcloudapi.com";
 const SERVICE_NAME: &str = "tmt";

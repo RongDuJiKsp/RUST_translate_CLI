@@ -1,14 +1,14 @@
 use crate::alias::param_alias::{ConfigName, FromLang, TargetLang, ToTranslatePlain};
 use clap::Parser;
 pub enum CliParsedWay {
-    AddConfig((ConfigName, FromLang, TargetLang)),
+    AddConfig(ConfigName, FromLang, TargetLang),
     DelConfig(ConfigName),
     TranslateWithParam(ToTranslatePlain, FromLang, TargetLang),
     TranslateWithConfig(ToTranslatePlain, ConfigName),
     Unknown,
 }
 
-#[derive(Parser)]
+#[derive(Parser, Debug, Clone)]
 #[command(
     version,
     author,
@@ -54,7 +54,7 @@ impl CliHandler {
             //when with Config Name And Flag Save Config
             if self.save_config {
                 if let Some(config_name) = &self.config_name {
-                    return CliParsedWay::AddConfig((config_name.clone(), from_lang.clone(), target_lang.clone()));
+                    return CliParsedWay::AddConfig(config_name.clone(), from_lang.clone(), target_lang.clone());
                 }
             }
         }

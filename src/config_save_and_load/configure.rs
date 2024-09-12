@@ -1,15 +1,27 @@
+use crate::util;
 use anyhow::{anyhow, Result};
 use std::fs::File;
-use std::io;
 use std::io::BufRead;
-pub const SPLIT_NAME: &'static str = "=";
-pub const SPLIT_FLAG: &'static str = "|";
+use std::path::Path;
+use std::io;
+
+pub const SPLIT_NAME: &str = "=";
+pub const SPLIT_FLAG: &str = "|";
 pub struct TransConfig {
-    name: String,
-    from_lang: String,
-    target_lang: String,
+    pub name: String,
+    pub from_lang: String,
+    pub target_lang: String,
 }
 impl TransConfig {
+    pub fn from_file_or_create(path: &str) -> Result<Vec<TransConfig>> {
+        let p = Path::new(path);
+        if p.exists() {
+            return Self::from_file(path);
+        }
+        util::file_sys::create_parent_dir(path)?;
+        File::create(p)?;
+        Ok(Vec::new())
+    }
     pub fn from_file(path: &str) -> Result<Vec<TransConfig>> {
         let file = File::open(path)?;
         let reader = io::BufReader::new(file);
