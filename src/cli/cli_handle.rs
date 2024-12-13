@@ -37,10 +37,18 @@ pub struct CliHandler {
     #[arg(short = 'p', long = "plain", help = "要翻译的文本内容")]
     pub to_translate_text: Option<String>,
     /// 源语言
-    #[arg(short = 'f', long = "from_lang", help = "源语言代码，例如 'en' 表示英语")]
+    #[arg(
+        short = 'f',
+        long = "from_lang",
+        help = "源语言代码，例如 'en' 表示英语"
+    )]
     pub from_lang: Option<String>,
     /// 目标语言
-    #[arg(short = 't', long = "target_lang", help = "目标语言代码，例如 'zh' 表示中文")]
+    #[arg(
+        short = 't',
+        long = "target_lang",
+        help = "目标语言代码，例如 'zh' 表示中文"
+    )]
     pub target_lang: Option<String>,
 }
 impl CliHandler {
@@ -49,12 +57,20 @@ impl CliHandler {
         if let (Some(from_lang), Some(target_lang)) = (&self.from_lang, &self.target_lang) {
             //When With Plain,Translate With Config
             if let Some(to_translate) = &self.to_translate_text {
-                return CliParsedWay::TranslateWithParam(to_translate.clone(), from_lang.clone(), target_lang.clone());
+                return CliParsedWay::TranslateWithParam(
+                    to_translate.clone(),
+                    from_lang.clone(),
+                    target_lang.clone(),
+                );
             }
             //when with Config Name And Flag Save Config
             if self.save_config {
                 if let Some(config_name) = &self.config_name {
-                    return CliParsedWay::AddConfig(config_name.clone(), from_lang.clone(), target_lang.clone());
+                    return CliParsedWay::AddConfig(
+                        config_name.clone(),
+                        from_lang.clone(),
+                        target_lang.clone(),
+                    );
                 }
             }
         }
@@ -63,7 +79,9 @@ impl CliHandler {
                 return CliParsedWay::DelConfig(config_name.clone());
             }
         }
-        if let (Some(config_name), Some(to_trans_text)) = (&self.config_name, &self.to_translate_text) {
+        if let (Some(config_name), Some(to_trans_text)) =
+            (&self.config_name, &self.to_translate_text)
+        {
             return CliParsedWay::TranslateWithConfig(to_trans_text.clone(), config_name.clone());
         }
         CliParsedWay::Unknown

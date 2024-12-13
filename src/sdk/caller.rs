@@ -23,7 +23,10 @@ impl TencentCloudTranslateSDK {
     pub fn from_env() -> Result<Self> {
         let secure_id = env::var("TCC_SECRET_ID")?;
         let secure_key = env::var("TCC_SECRET_KEY")?;
-        Ok(Self { secure_id, secure_key })
+        Ok(Self {
+            secure_id,
+            secure_key,
+        })
     }
     pub async fn call_service_with_json(&self, action: &str, json: &str) -> Result<String> {
         //time data
@@ -41,18 +44,27 @@ impl TencentCloudTranslateSDK {
         );
         Ok(send_request(action, json, timestamp, &authorization).await?)
     }
-    pub async fn translate_text(&self, text: &str, from_lang: &FromLang, target_lang: &TargetLang) -> Result<String> {
+    pub async fn translate_text(
+        &self,
+        text: &str,
+        from_lang: &FromLang,
+        target_lang: &TargetLang,
+    ) -> Result<String> {
         let action = "TextTranslate";
         let req_payload = json!({
              "SourceText": text,
              "Source": from_lang,
              "Target": target_lang,
              "ProjectId": 0
-        }).to_string();
+        })
+        .to_string();
         let res_json_str = self.call_service_with_json(action, &req_payload).await?;
-        match  serde_json::from_str::<TranslateResponse>(&res_json_str) {
-            Ok(deserialized)=>Ok(deserialized.response.target_text),
-            Err(_)=>Err(anyhow::anyhow!("Failed to translate text,response is {}", res_json_str)),
+        match serde_json::from_str::<TranslateResponse>(&res_json_str) {
+            Ok(deserialized) => Ok(deserialized.response.target_text),
+            Err(_) => Err(anyhow::anyhow!(
+                "Failed to translate text,response is {}",
+                res_json_str
+            )),
         }
     }
 }
@@ -62,7 +74,9 @@ fn canonical_request_str(action: &str, payload: &str) -> String {
     let canonical_query_string = "";
     let canonical_headers = format!(
         "content-type:{}\nhost:{}\nx-tc-action:{}\n",
-        API_CONTENT_TYPE, REGION_DISTANCE_FIRST_HOST, action.to_lowercase()
+        API_CONTENT_TYPE,
+        REGION_DISTANCE_FIRST_HOST,
+        action.to_lowercase()
     );
     let hashed_request_payload = Crypto::sha256hex(payload);
     let canonical_request = format!(
@@ -93,13 +107,21 @@ fn signature(date: &str, secret_key: &str, str_to_sign: &str) -> String {
     let signature = Crypto::hmacsha256(str_to_sign.as_bytes(), &secret_signing);
     hex::encode(signature)
 }
-async fn send_request(action: &str, payload: &str, timestamp: u64, authorization: &str) -> Result<String> {
+async fn send_request(
+    action: &str,
+    payload: &str,
+    timestamp: u64,
+    authorization: &str,
+) -> Result<String> {
     let url = format!("https://{}", REGION_DISTANCE_FIRST_HOST);
     let mut headers = HeaderMap::new();
     headers.insert("Host", HeaderValue::from_str(REGION_DISTANCE_FIRST_HOST)?);
     headers.insert("X-TC-Action", HeaderValue::from_str(action)?);
     headers.insert("X-TC-Version", HeaderValue::from_str(SERVICE_VERSION)?);
-    headers.insert("X-TC-Timestamp", HeaderValue::from_str(&timestamp.to_string())?);
+    headers.insert(
+        "X-TC-Timestamp",
+        HeaderValue::from_str(&timestamp.to_string())?,
+    );
     headers.insert(CONTENT_TYPE, HeaderValue::from_str(API_CONTENT_TYPE)?);
     headers.insert("Authorization", HeaderValue::from_str(authorization)?);
     headers.insert("X-TC-Region", HeaderValue::from_str(SERVICE_REGION)?);

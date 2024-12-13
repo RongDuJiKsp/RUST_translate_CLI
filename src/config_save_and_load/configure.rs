@@ -3,7 +3,7 @@ use crate::util;
 use anyhow::{anyhow, Result};
 use std::path::Path;
 use tokio::fs::File;
-use tokio::io::{ AsyncReadExt};
+use tokio::io::AsyncReadExt;
 
 const SPLIT_NAME: &str = "=";
 const SPLIT_FLAG: &str = "|";
@@ -25,10 +25,7 @@ impl TransConfig {
     }
     pub async fn from_file(path: &str) -> Result<Vec<TransConfig>> {
         let mut read_buf = Vec::new();
-        File::open(path)
-            .await?
-            .read_to_end(&mut read_buf)
-            .await?;
+        File::open(path).await?.read_to_end(&mut read_buf).await?;
         let res = read_buf
             .split(|&c| c == b'\n')
             .map(|x| Ok(TransConfig::from_one_line(std::str::from_utf8(x)?)?))
@@ -51,13 +48,31 @@ impl TransConfig {
         if flags.len() != 2 {
             return Err(anyhow!("配置文件存在异常，需要 SPLIT_LANG_FLAG"));
         }
-        let (name, from_lang, target_lang) = (units[0].to_string(), flags[0].to_string(), flags[1].to_string());
-        Ok(Some(TransConfig { name, from_lang, target_lang }))
+        let (name, from_lang, target_lang) = (
+            units[0].to_string(),
+            flags[0].to_string(),
+            flags[1].to_string(),
+        );
+        Ok(Some(TransConfig {
+            name,
+            from_lang,
+            target_lang,
+        }))
     }
     pub fn to_line(&self) -> Vec<u8> {
-        Vec::from(format!("{}{}{}{}{}\n", &self.name, SPLIT_NAME, &self.from_lang, SPLIT_FLAG, &self.target_lang))
+        Vec::from(format!(
+            "{}{}{}{}{}\n",
+            &self.name, SPLIT_NAME, &self.from_lang, SPLIT_FLAG, &self.target_lang
+        ))
     }
-    pub fn from_val_to_line(name: &ConfigName, from_lang: &FromLang, target_lang: &TargetLang) -> Vec<u8> {
-        Vec::from(format!("{}{}{}{}{}\n", name, SPLIT_NAME, from_lang, SPLIT_FLAG, target_lang))
+    pub fn from_val_to_line(
+        name: &ConfigName,
+        from_lang: &FromLang,
+        target_lang: &TargetLang,
+    ) -> Vec<u8> {
+        Vec::from(format!(
+            "{}{}{}{}{}\n",
+            name, SPLIT_NAME, from_lang, SPLIT_FLAG, target_lang
+        ))
     }
 }
