@@ -13,8 +13,11 @@ mod util;
 async fn main() {
     let sdk =
         sdk::caller::TencentCloudTranslateSDK::from_env().expect("SDK Key未配置！请配置后使用");
-    let mut exec = std::env::current_exe().expect("获取不到自身路径，奇了怪了");
-    exec.push("/.config/rust_trans_cli");
+    let exec = std::env::current_exe()
+        .expect("获取不到自身路径，奇了怪了")
+        .parent()
+        .expect("获取不到自身目录，奇了怪了")
+        .join(".config/rust_trans_cli.conf");
     let mut cfg = ConfigLoader::from_path(exec.to_str().expect("自身路径存在异常"))
         .await
         .expect("加载配置失败");
